@@ -32,7 +32,7 @@ public class MeetupStormTopology {
 		cluster.submitTopology("MeetupStormTopology", conf,
 				builder.createTopology());
 		try {
-			Thread.sleep(13500);
+			Thread.sleep(15000);
 		} catch (Exception exception) {
 			System.out.println("Thread interrupted exception : " + exception);
 		}

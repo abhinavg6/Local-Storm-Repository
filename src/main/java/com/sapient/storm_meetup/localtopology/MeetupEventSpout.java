@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -28,7 +29,7 @@ public class MeetupEventSpout extends BaseRichSpout {
 	private static final long serialVersionUID = 1L;
 
 	private SpoutOutputCollector spoutOutputCollector;
-	private Iterable<CSVRecord> csvRecords;
+	private Iterator<CSVRecord> csvRecordsItr;
 
 	@SuppressWarnings("rawtypes")
 	public void open(Map conf, TopologyContext context,
@@ -40,9 +41,10 @@ public class MeetupEventSpout extends BaseRichSpout {
 			InputStream inStream = this.getClass().getClassLoader()
 					.getResourceAsStream("meetupoutput.csv");
 			Reader in = new InputStreamReader(inStream);
-			csvRecords = CSVFormat.DEFAULT
-					.withHeader("GROUP_NAME", "EVENT_NAME", "EVENT_STATUS",
-							"EVENT_CITY", "EVENT_COUNTRY").parse(in);
+			Iterable<CSVRecord> csvRecords = CSVFormat.DEFAULT.withHeader(
+					"GROUP_NAME", "EVENT_NAME", "EVENT_STATUS", "EVENT_CITY",
+					"EVENT_COUNTRY").parse(in);
+			csvRecordsItr = csvRecords.iterator();
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
@@ -51,11 +53,11 @@ public class MeetupEventSpout extends BaseRichSpout {
 	public void nextTuple() {
 		// Storm cluster repeatedly calls this method to emit a continuous
 		// stream of tuples.
-		if (csvRecords.iterator().hasNext()) {
+		if (csvRecordsItr.hasNext()) {
 			// Get the next record from input file
 			CSVRecord csvRecord = null;
 			try {
-				csvRecord = csvRecords.iterator().next();
+				csvRecord = csvRecordsItr.next();
 				String groupName = csvRecord.get("GROUP_NAME");
 				String eventName = csvRecord.get("EVENT_NAME");
 				String eventStatus = csvRecord.get("EVENT_STATUS");
